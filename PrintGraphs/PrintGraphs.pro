@@ -16,6 +16,8 @@ HEADERS += \
     MainWindow.h \
     datasource.h \
     graphrendere.h \
+    ioccontainer.h \
+    iocsetup.h \
     pdfexporter.h
 
 FORMS += \
