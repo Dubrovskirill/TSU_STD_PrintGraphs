@@ -2,9 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QComboBox>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QListWidget>
 #include "graphrenderer.h"
 #include "datasource.h"
 
@@ -17,20 +17,21 @@ public:
     ~MainWindow() = default;
 
 private slots:
-    void onDataSourceTypeChanged(int index);
-    void onSelectFileClicked();
+    void onSelectDirectoryClicked();
+    void onFileSelectedFromList(QListWidgetItem* item);
     void onColorModeChanged(bool checked);
 
 private:
     void setupUI();
+    void listFilesInDirectory(const QString& directoryPath);
     void loadData(const QString& filePath);
 
     GraphRenderer* m_graphRenderer;    // Виджет для отображения графика
-    QComboBox* m_dataSourceCombo;      // Выбор типа источника данных
-    QPushButton* m_selectFileButton;   // Кнопка выбора файла
+    QPushButton* m_selectDirectoryButton;   // Кнопка выбора папки
+    QListWidget* m_fileListWidget;       // Список файлов
     QPushButton* m_colorModeButton;    // Кнопка переключения цветного/монохромного режима
     
-    QString m_currentFilePath;         // Текущий выбранный файл
+    QString m_currentDirectoryPath;    // Текущий выбранный каталог
     bool m_isColored;                  // Флаг цветного режима
 };
 
