@@ -75,9 +75,6 @@ bool SqliteDataSource::loadData(const QString& sourcePath)
             return false;
         }
 
-        // Выводим в консоль в формате x:<время> y:<значение>
-        qDebug() << "x:" + timeStr + " y:" + QString::number(value);
-
         times.append(time);
         values.append(value);
     }
