@@ -10,15 +10,16 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    MainWindow.cpp
+    sqlitedatasource.cpp
 
 HEADERS += \
-    MainWindow.h \
     datasource.h \
+    datasourcefactory.h \
     graphrendere.h \
     ioccontainer.h \
     iocsetup.h \
-    pdfexporter.h
+    pdfexporter.h \
+    sqlitedatasource.h
 
 FORMS += \
     MainWindow.ui
@@ -27,3 +28,4 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+QT += sql
