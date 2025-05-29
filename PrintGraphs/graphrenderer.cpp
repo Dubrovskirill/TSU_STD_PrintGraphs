@@ -22,7 +22,7 @@ GraphRenderer::GraphRenderer(QWidget* parent)
     setLayout(layout);
 
     // Начальная настройка графика
-    m_chart->setTitle("Data Visualization"); // Можно установить здесь или при загрузке данных
+    m_chart->setTitle("Data Visualization");
     m_chart->legend()->hide();
 }
 
@@ -33,18 +33,13 @@ GraphRenderer::~GraphRenderer()
 
 void GraphRenderer::render(const QList<QPointF>& data)
 {
-    // Очистка предыдущих данных и осей
+    // Очистка предыдущих данных
     m_chart->removeAllSeries();
     
+    // Удаляем старые оси
     for (auto* axis : m_chart->axes()) {
         m_chart->removeAxis(axis);
         delete axis;
-    }
-
-    // Если данных нет, останавливаемся здесь
-    if (data.isEmpty()) {
-        m_chart->setTitle("Data Visualization"); // Сбрасываем заголовок или устанавливаем дефолтный
-        return;
     }
 
     // Создание новой серии данных
@@ -65,7 +60,7 @@ void GraphRenderer::render(const QList<QPointF>& data)
     QtCharts::QDateTimeAxis* axisX = new QtCharts::QDateTimeAxis();
     axisX->setTitleText("Time");
     axisX->setFormat("dd.MM.yyyy HH:mm"); // Устанавливаем формат отображения даты/времени
-    // axisX->setTickCount(10); // Можно настроить количество делений или оставить автоматическое
+    axisX->setTickCount(10); // Пример: установить количество делений
 
     QtCharts::QValueAxis* axisY = new QtCharts::QValueAxis();
     axisY->setTitleText("Value");
@@ -96,9 +91,6 @@ void GraphRenderer::render(const QList<QPointF>& data)
     m_chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisX);
     series->attachAxis(axisY);
-
-    // Устанавливаем заголовок графика (можно сделать более информативным)
-    m_chart->setTitle("График данных");
 }
 
 void GraphRenderer::setStyle(bool isColored)

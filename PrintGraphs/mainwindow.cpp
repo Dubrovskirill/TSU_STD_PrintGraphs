@@ -8,7 +8,6 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QSplitter>
-#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -56,11 +55,6 @@ void MainWindow::setupUI()
     // Добавляем сплиттер в главный layout
     mainLayout->addWidget(dataSplitter);
 
-    // Создаем и добавляем строку состояния
-    m_statusBar = new QStatusBar(this);
-    setStatusBar(m_statusBar);
-    updateStatus("Выберите папку с данными");
-
     // Подключаем сигналы к слотам
     connect(m_selectDirectoryButton, &QPushButton::clicked,
             this, &MainWindow::onSelectDirectoryClicked);
@@ -83,7 +77,6 @@ void MainWindow::onSelectDirectoryClicked()
     if (!directoryPath.isEmpty()) {
         m_currentDirectoryPath = directoryPath;
         listFilesInDirectory(directoryPath);
-        updateStatus("Папка выбрана: " + m_currentDirectoryPath);
     }
 }
 
@@ -110,37 +103,22 @@ void MainWindow::onColorModeChanged(bool checked)
     m_isColored = checked;
     m_colorModeButton->setText(checked ? "Цветной режим" : "Монохромный режим");
     m_graphRenderer->setStyle(checked);
-    updateStatus(QString("Режим графика изменен на: ") + (checked ? "Цветной" : "Монохромный"), 2000);
 }
 
 void MainWindow::loadData(const QString& filePath)
 {
-    // Очищаем график перед загрузкой новых данных
-    m_graphRenderer->render(QList<QPointF>());
-
     QSharedPointer<IDataSource> dataSource = DataSourceFactory::createSource(filePath);
 
     if (!dataSource) {
-         updateStatus("Ошибка: Неподдерживаемый формат файла: " + filePath, 5000);
          QMessageBox::critical(this, "Ошибка", "Неподдерживаемый формат файла: " + filePath);
          return;
     }
 
     if (!dataSource->loadData(filePath)) {
-        updateStatus("Ошибка загрузки данных: " + dataSource->getError(), 5000);
         QMessageBox::critical(this, "Ошибка",
             "Не удалось загрузить данные: " + dataSource->getError());
-        // При ошибке загрузки данных сбрасываем интерфейс графика
-        m_graphRenderer->render(QList<QPointF>());
         return;
     }
 
-    QList<QPointF> data = dataSource->getData();
-    m_graphRenderer->render(data);
-    updateStatus("Данные загружены из " + filePath + ". Обработано точек: " + QString::number(data.size()));
-}
-
-void MainWindow::updateStatus(const QString& message, int timeout)
-{
-    m_statusBar->showMessage(message, timeout);
+    m_graphRenderer->render(dataSource->getData());
 } 
