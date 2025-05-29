@@ -13,11 +13,13 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    mainwindow.cpp \
     sqlitedatasource.cpp \
     jsondatasource.cpp \
     graphrenderer.cpp
 
 HEADERS += \
+    mainwindow.h \
     datasource.h \
     sqlitedatasource.h \
     jsondatasource.h \
