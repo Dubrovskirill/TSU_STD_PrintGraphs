@@ -4,7 +4,7 @@
 #include "ioccontainer.h"
 #include "datasource.h"
 #include "sqlitedatasource.h"
-#include "graphrendere.h"
+#include "graphrenderer.h"
 #include "pdfexporter.h"
 
 void setupIoC(IoCContainer& container)
@@ -14,11 +14,12 @@ void setupIoC(IoCContainer& container)
         return QSharedPointer<IDataSource>(new SqliteDataSource());
     });
 
-    // Заглушки для IGraphRenderer и IPdfExporter
+    // Регистрация GraphRenderer как реализации IGraphRenderer
     container.registerType<IGraphRenderer>([]() -> QSharedPointer<IGraphRenderer> {
-        return nullptr;
+        return QSharedPointer<IGraphRenderer>(new GraphRenderer());
     });
 
+    // Заглушка для IPdfExporter
     container.registerType<IPdfExporter>([]() -> QSharedPointer<IPdfExporter> {
         return nullptr;
     });
