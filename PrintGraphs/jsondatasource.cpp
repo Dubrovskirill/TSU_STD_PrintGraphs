@@ -34,8 +34,8 @@ bool JsonDataSource::loadData(const QString& sourcePath)
     }
 
     // Парсим данные
-    QDateTime baseTime;
-    bool isFirst = true;
+    // QDateTime baseTime; // Больше не нужна для оси времени
+    // bool isFirst = true; // Больше не нужна для оси времени
 
     for (const QJsonValue& value : array) {
         if (!value.isArray() || value.toArray().size() != 2) {
@@ -59,14 +59,8 @@ bool JsonDataSource::loadData(const QString& sourcePath)
 
         qreal pointValue = pointArray[1].toDouble();
 
-        if (isFirst) {
-            baseTime = dateTime;
-            isFirst = false;
-        }
-
-        // Конвертируем время в часы от начальной точки
-        qreal hours = baseTime.secsTo(dateTime) / 3600.0;
-        m_data.append(QPointF(hours, pointValue));
+        // Конвертируем время в миллисекунды с начала эпохи для оси времени
+        m_data.append(QPointF(dateTime.toMSecsSinceEpoch(), pointValue));
     }
 
     return true;
@@ -112,6 +106,8 @@ bool JsonDataSource::validateJsonFormat(const QJsonArray& array)
 bool JsonDataSource::parseDateTime(const QString& dateTimeStr, QDateTime& dateTime)
 {
     dateTime = QDateTime::fromString(dateTimeStr, "dd.MM.yyyy HH:mm");
+    // Устанавливаем временную зону UTC, чтобы избежать проблем с локальным временем
+    dateTime.setTimeSpec(Qt::UTC);
     if (!dateTime.isValid()) {
         m_error = "Invalid date format: " + dateTimeStr + ". Expected format: dd.MM.yyyy HH:mm";
         return false;

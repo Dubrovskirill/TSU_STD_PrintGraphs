@@ -3,6 +3,8 @@
 #include <QValueAxis>
 #include <QVBoxLayout> // Добавлен для QVBoxLayout
 #include <QApplication>
+#include <QDateTimeAxis> // Добавляем для QDateTimeAxis
+#include <QDateTime> // Добавляем для QDateTime
 
 GraphRenderer::GraphRenderer(QWidget* parent)
     : QWidget(parent)
@@ -54,9 +56,11 @@ void GraphRenderer::render(const QList<QPointF>& data)
     m_chart->addSeries(series);
 
     // Настройка осей
-    QtCharts::QValueAxis* axisX = new QtCharts::QValueAxis();
-    axisX->setTitleText("Time (hours)");
-    axisX->setLabelFormat("%.1f");
+    // Используем QDateTimeAxis для оси X
+    QtCharts::QDateTimeAxis* axisX = new QtCharts::QDateTimeAxis();
+    axisX->setTitleText("Time");
+    axisX->setFormat("dd.MM.yyyy HH:mm"); // Устанавливаем формат отображения даты/времени
+    axisX->setTickCount(10); // Пример: установить количество делений
 
     QtCharts::QValueAxis* axisY = new QtCharts::QValueAxis();
     axisY->setTitleText("Value");
@@ -75,7 +79,11 @@ void GraphRenderer::render(const QList<QPointF>& data)
         maxY = qMax(maxY, point.y());
     }
 
-    axisX->setRange(minX, maxX);
+    // Устанавливаем диапазон для QDateTimeAxis
+    QDateTime minDateTime = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(minX));
+    QDateTime maxDateTime = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(maxX));
+    axisX->setRange(minDateTime, maxDateTime);
+
     axisY->setRange(minY, maxY);
 
     // Добавление осей на график и привязка к серии

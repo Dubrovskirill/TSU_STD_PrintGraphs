@@ -3,6 +3,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QDebug>
+#include <QDateTime>
 
 SqliteDataSource::SqliteDataSource() : m_db(QSqlDatabase::addDatabase("QSQLITE"))
 {
@@ -52,14 +53,14 @@ bool SqliteDataSource::loadData(const QString& sourcePath)
         return false;
     }
 
-    QVector<QDateTime> times;
-    QVector<qreal> values;
     while (query.next()) {
         // Извлекаем данные из первого столбца (время) как строку
         QString timeStr = query.value(0).toString();
 
         // Парсим время в формате "dd.MM.yyyy HH:mm"
         QDateTime time = QDateTime::fromString(timeStr, "dd.MM.yyyy HH:mm");
+        // Устанавливаем временную зону UTC, чтобы избежать проблем с локальным временем
+        time.setTimeSpec(Qt::UTC);
         if (!time.isValid()) {
             m_error = "Invalid time format in first column: " + timeStr + ". Expected format: dd.MM.yyyy HH:mm";
             m_db.close();
@@ -75,22 +76,14 @@ bool SqliteDataSource::loadData(const QString& sourcePath)
             return false;
         }
 
-        times.append(time);
-        values.append(value);
+        // Конвертируем время в миллисекунды с начала эпохи для оси времени
+        m_data.append(QPointF(time.toMSecsSinceEpoch(), value));
     }
 
-    if (times.isEmpty()) {
+    if (m_data.isEmpty()) { // Проверяем m_data напрямую
         m_error = "No valid data found in table " + targetTable;
         m_db.close();
         return false;
-    }
-
-    // Преобразуем время в разницу в часах от первой точки
-    QDateTime baseTime = times.first();
-    m_data.clear();
-    for (int i = 0; i < times.size(); ++i) {
-        qreal hours = baseTime.secsTo(times[i]) / 3600.0; // Разница в часах
-        m_data.append(QPointF(hours, values[i]));
     }
 
     m_db.close();
