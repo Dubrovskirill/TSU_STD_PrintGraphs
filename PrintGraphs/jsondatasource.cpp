@@ -1,6 +1,9 @@
 #include "jsondatasource.h"
 #include <QFile>
 #include <QDebug>
+#include <QStringList>
+#include <QDate>
+#include <QTime>
 
 bool JsonDataSource::loadData(const QString& sourcePath)
 {
@@ -32,10 +35,6 @@ bool JsonDataSource::loadData(const QString& sourcePath)
     if (!validateJsonFormat(array)) {
         return false;
     }
-
-    // Парсим данные
-    // QDateTime baseTime; // Больше не нужна для оси времени
-    // bool isFirst = true; // Больше не нужна для оси времени
 
     for (const QJsonValue& value : array) {
         if (!value.isArray() || value.toArray().size() != 2) {
@@ -105,11 +104,40 @@ bool JsonDataSource::validateJsonFormat(const QJsonArray& array)
 
 bool JsonDataSource::parseDateTime(const QString& dateTimeStr, QDateTime& dateTime)
 {
+    // Попытка парсинга в формате "dd.MM.yyyy HH:mm"
     dateTime = QDateTime::fromString(dateTimeStr, "dd.MM.yyyy HH:mm");
+
+    // Если не удалось, попытка парсинга в формате "dd.MM.yyyy <минуты от начала дня>"
+    if (!dateTime.isValid()) {
+        QStringList parts = dateTimeStr.split(' ');
+        if (parts.size() == 2) {
+            QDate date = QDate::fromString(parts[0], "dd.MM.yyyy");
+            bool ok;
+            int totalMinutes = parts[1].toInt(&ok);
+
+            if (date.isValid() && ok) {
+                // Если минуты >= 1440 (24 часа), считаем это 00:00 следующего дня
+                if (totalMinutes >= 1440) {
+                    date = date.addDays(totalMinutes / 1440);
+                    totalMinutes = totalMinutes % 1440; // Оставшиеся минуты для нового дня
+                }
+                
+                int hours = totalMinutes / 60;
+                int remainingMinutes = totalMinutes % 60;
+                QTime time(hours, remainingMinutes);
+                
+                if (time.isValid()) {
+                    dateTime = QDateTime(date, time);
+                }
+            }
+        }
+    }
+    
     // Устанавливаем временную зону UTC, чтобы избежать проблем с локальным временем
     dateTime.setTimeSpec(Qt::UTC);
+    
     if (!dateTime.isValid()) {
-        m_error = "Invalid date format: " + dateTimeStr + ". Expected format: dd.MM.yyyy HH:mm";
+        m_error = "Invalid date format: " + dateTimeStr + ". Expected formats: dd.MM.yyyy HH:mm or dd.MM.yyyy <total minutes from start of day>";
         return false;
     }
     return true;

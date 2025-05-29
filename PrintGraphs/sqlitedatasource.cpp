@@ -4,6 +4,9 @@
 #include <QSqlRecord>
 #include <QDebug>
 #include <QDateTime>
+#include <QStringList>
+#include <QDate>
+#include <QTime>
 
 SqliteDataSource::SqliteDataSource() : m_db(QSqlDatabase::addDatabase("QSQLITE"))
 {
@@ -56,13 +59,42 @@ bool SqliteDataSource::loadData(const QString& sourcePath)
     while (query.next()) {
         // Извлекаем данные из первого столбца (время) как строку
         QString timeStr = query.value(0).toString();
+        QDateTime time;
 
-        // Парсим время в формате "dd.MM.yyyy HH:mm"
-        QDateTime time = QDateTime::fromString(timeStr, "dd.MM.yyyy HH:mm");
+        // Попытка парсинга в формате "dd.MM.yyyy HH:mm"
+        time = QDateTime::fromString(timeStr, "dd.MM.yyyy HH:mm");
+
+        // Если не удалось, попытка парсинга в формате "dd.MM.yyyy <минуты от начала дня>"
+        if (!time.isValid()) {
+            QStringList parts = timeStr.split(' ');
+            if (parts.size() == 2) {
+                QDate date = QDate::fromString(parts[0], "dd.MM.yyyy");
+                bool ok;
+                int totalMinutes = parts[1].toInt(&ok);
+
+                if (date.isValid() && ok) {
+                    // Если минуты >= 1440 (24 часа), считаем это 00:00 следующего дня
+                    if (totalMinutes >= 1440) {
+                        date = date.addDays(totalMinutes / 1440);
+                        totalMinutes = totalMinutes % 1440; // Оставшиеся минуты для нового дня
+                    }
+                    
+                    int hours = totalMinutes / 60;
+                    int remainingMinutes = totalMinutes % 60;
+                    QTime qtime(hours, remainingMinutes);
+                    
+                    if (qtime.isValid()) {
+                        time = QDateTime(date, qtime);
+                    }
+                }
+            }
+        }
+        
         // Устанавливаем временную зону UTC, чтобы избежать проблем с локальным временем
         time.setTimeSpec(Qt::UTC);
+
         if (!time.isValid()) {
-            m_error = "Invalid time format in first column: " + timeStr + ". Expected format: dd.MM.yyyy HH:mm";
+            m_error = "Invalid time format in first column: " + timeStr + ". Expected formats: dd.MM.yyyy HH:mm or dd.MM.yyyy <total minutes from start of day>";
             m_db.close();
             return false;
         }
