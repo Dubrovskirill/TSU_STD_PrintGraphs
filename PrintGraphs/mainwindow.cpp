@@ -8,6 +8,9 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QSplitter>
+#include <QPdfWriter>
+#include <QPainter>
+#include <QStatusBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,6 +41,11 @@ void MainWindow::setupUI()
     m_colorModeButton->setChecked(true);
     controlLayout->addWidget(m_colorModeButton);
 
+    // Создаем кнопку печати в PDF
+    m_printButton = new QPushButton("Сохранить в PDF", this);
+    m_printButton->setEnabled(false); // По умолчанию кнопка неактивна
+    controlLayout->addWidget(m_printButton);
+
     // Добавляем layout с элементами управления в главный layout
     mainLayout->addLayout(controlLayout);
 
@@ -55,6 +63,9 @@ void MainWindow::setupUI()
     // Добавляем сплиттер в главный layout
     mainLayout->addWidget(dataSplitter);
 
+    // Создаем статус бар
+    statusBar()->showMessage("Готов к работе");
+
     // Подключаем сигналы к слотам
     connect(m_selectDirectoryButton, &QPushButton::clicked,
             this, &MainWindow::onSelectDirectoryClicked);
@@ -62,6 +73,8 @@ void MainWindow::setupUI()
             this, &MainWindow::onFileSelectedFromList);
     connect(m_colorModeButton, &QPushButton::toggled,
             this, &MainWindow::onColorModeChanged);
+    connect(m_printButton, &QPushButton::clicked,
+            this, &MainWindow::onPrintButtonClicked);
 
     // Устанавливаем минимальный размер окна
     resize(1000, 600);
@@ -77,6 +90,9 @@ void MainWindow::onSelectDirectoryClicked()
     if (!directoryPath.isEmpty()) {
         m_currentDirectoryPath = directoryPath;
         listFilesInDirectory(directoryPath);
+        statusBar()->showMessage("Папка успешно выбрана", 3000);
+    } else {
+        statusBar()->showMessage("Выбор папки отменен", 3000);
     }
 }
 
@@ -103,6 +119,7 @@ void MainWindow::onColorModeChanged(bool checked)
     m_isColored = checked;
     m_colorModeButton->setText(checked ? "Цветной режим" : "Монохромный режим");
     m_graphRenderer->setStyle(checked);
+    statusBar()->showMessage(checked ? "Установлен цветной режим" : "Установлен монохромный режим", 3000);
 }
 
 void MainWindow::loadData(const QString& filePath)
@@ -111,14 +128,44 @@ void MainWindow::loadData(const QString& filePath)
 
     if (!dataSource) {
          QMessageBox::critical(this, "Ошибка", "Неподдерживаемый формат файла: " + filePath);
+         statusBar()->showMessage("Ошибка: неподдерживаемый формат файла", 3000);
+         m_printButton->setEnabled(false);
          return;
     }
 
     if (!dataSource->loadData(filePath)) {
         QMessageBox::critical(this, "Ошибка",
             "Не удалось загрузить данные: " + dataSource->getError());
+        statusBar()->showMessage("Ошибка загрузки данных", 3000);
+        m_printButton->setEnabled(false);
         return;
     }
 
     m_graphRenderer->render(dataSource->getData());
+    m_printButton->setEnabled(true);
+    statusBar()->showMessage("Данные успешно загружены", 3000);
+}
+
+void MainWindow::onPrintButtonClicked()
+{
+    if (m_graphRenderer->isEmpty()) {
+        showError("Нельзя напечатать пустой график...");
+        statusBar()->showMessage("Ошибка: график пуст", 3000);
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, "Сохранить график", "", "PDF (*.pdf)");
+    if (!filePath.isEmpty()) {
+        QPdfWriter pdfWriter(filePath);
+        QPainter painter(&pdfWriter);
+        m_graphRenderer->getChartView()->render(&painter);
+        statusBar()->showMessage("График успешно сохранен в PDF", 3000);
+    } else {
+        statusBar()->showMessage("Сохранение отменено", 3000);
+    }
+}
+
+void MainWindow::showError(const QString& message)
+{
+    QMessageBox::critical(this, "Ошибка", message);
 } 

@@ -20,6 +20,12 @@ public:
     // Установка стиля (цветной или монохромный)
     void setStyle(bool isColored) override;
 
+    // Проверка, пуст ли график
+    bool isEmpty() const;
+
+    // Получение указателя на QChartView
+    QtCharts::QChartView* getChartView() const { return m_chartView; }
+
 private:
     QtCharts::QChart* m_chart; // График
     QtCharts::QChartView* m_chartView; // Представление графика
