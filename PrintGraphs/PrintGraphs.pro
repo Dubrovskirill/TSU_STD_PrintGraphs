@@ -33,7 +33,8 @@ HEADERS += \
     jsondatasource.h \
     igraphrenderer.h \
     datasource.h \
-    datasourcefactory.h
+    datasourcefactory.h \
+    iocsetup.h
 
 FORMS += \
     MainWindow.ui
