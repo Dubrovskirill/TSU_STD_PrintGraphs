@@ -127,17 +127,18 @@ void MainWindow::loadData(const QString& filePath)
     QSharedPointer<IDataSource> dataSource = DataSourceFactory::createSource(filePath);
 
     if (!dataSource) {
-         QMessageBox::critical(this, "Ошибка", "Неподдерживаемый формат файла: " + filePath);
-         statusBar()->showMessage("Ошибка: неподдерживаемый формат файла", 3000);
-         m_printButton->setEnabled(false);
-         return;
+        QString errorMessage = "Неподдерживаемый формат файла: " + filePath;
+        statusBar()->showMessage(errorMessage);
+        m_printButton->setEnabled(false);
+        m_graphRenderer->clear();
+        return;
     }
 
     if (!dataSource->loadData(filePath)) {
-        QMessageBox::critical(this, "Ошибка",
-            "Не удалось загрузить данные: " + dataSource->getError());
-        statusBar()->showMessage("Ошибка загрузки данных", 3000);
+        QString errorMessage = "Не удалось загрузить данные: " + dataSource->getError();
+        statusBar()->showMessage(errorMessage);
         m_printButton->setEnabled(false);
+        m_graphRenderer->clear();
         return;
     }
 
@@ -149,8 +150,7 @@ void MainWindow::loadData(const QString& filePath)
 void MainWindow::onPrintButtonClicked()
 {
     if (m_graphRenderer->isEmpty()) {
-        showError("Нельзя напечатать пустой график...");
-        statusBar()->showMessage("Ошибка: график пуст", 3000);
+        statusBar()->showMessage("Нельзя напечатать пустой график...");
         return;
     }
 
@@ -163,9 +163,4 @@ void MainWindow::onPrintButtonClicked()
     } else {
         statusBar()->showMessage("Сохранение отменено", 3000);
     }
-}
-
-void MainWindow::showError(const QString& message)
-{
-    QMessageBox::critical(this, "Ошибка", message);
 } 

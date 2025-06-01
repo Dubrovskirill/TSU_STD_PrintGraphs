@@ -26,6 +26,9 @@ public:
     // Получение указателя на QChartView
     QtCharts::QChartView* getChartView() const { return m_chartView; }
 
+    // Очистка графика
+    void clear();
+
 private:
     QtCharts::QChart* m_chart; // График
     QtCharts::QChartView* m_chartView; // Представление графика

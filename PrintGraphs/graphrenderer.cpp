@@ -104,3 +104,19 @@ bool GraphRenderer::isEmpty() const
 {
     return m_chart->series().isEmpty();
 }
+
+void GraphRenderer::clear()
+{
+    // Удаляем все серии данных
+    m_chart->removeAllSeries();
+    
+    // Удаляем все оси
+    for (auto* axis : m_chart->axes()) {
+        m_chart->removeAxis(axis);
+        delete axis;
+    }
+
+    // Сбрасываем заголовок и легенду
+    m_chart->setTitle("");
+    m_chart->legend()->hide();
+}
