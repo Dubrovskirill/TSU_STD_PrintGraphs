@@ -1,10 +1,15 @@
 #include "mainwindow.h"
+#include "ioccontainer.h"
+
 #include <QApplication>
+
+// Определение глобального экземпляра контейнера
+IOCContainer gContainer;
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-    MainWindow window;
-    window.show();
-    return app.exec();
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
 }

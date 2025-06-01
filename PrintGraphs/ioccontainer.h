@@ -1,37 +1,92 @@
 #ifndef IOCCONTAINER_H
 #define IOCCONTAINER_H
 
-#include <QSharedPointer>
-#include <QMap>
-#include <QVariant>
+#include <map>
+#include <memory>
 #include <functional>
 
-// Простой IoC-контейнер
-class IoCContainer
+class IOCContainer
 {
+    static int s_nextTypeId;
+    template<typename T>
+    static int GetTypeID() {
+        static int typeId = s_nextTypeId++;
+        return typeId;
+    }
+
 public:
-    // Регистрация типа с функцией создания
-    template<typename T>
-    void registerType(std::function<QSharedPointer<T>()> creator)
+    class FactoryRoot
     {
-        creators_[typeid(T).name()] = [creator]() -> QVariant {
-            return QVariant::fromValue(creator());
-        };
-    }
+    public:
+        virtual ~FactoryRoot() {}
+    };
 
-    // Получение экземпляра
+    std::map<int, std::shared_ptr<FactoryRoot>> m_factories;
+
     template<typename T>
-    QSharedPointer<T> resolve()
+    class CFactory : public FactoryRoot
     {
-        auto it = creators_.find(typeid(T).name());
-        if (it != creators_.end()) {
-            return it.value()().value<QSharedPointer<T>>();
+        std::function<std::shared_ptr<T>()> m_functor;
+
+    public:
+        ~CFactory() {}
+
+        CFactory(std::function<std::shared_ptr<T>()> functor)
+            : m_functor(functor)
+        {}
+
+        std::shared_ptr<T> GetObject() {
+            return m_functor();
         }
-        return nullptr;
+    };
+
+    template<typename T>
+    std::shared_ptr<T> GetObject() {
+        auto typeId = GetTypeID<T>();
+        auto factoryBase = m_factories[typeId];
+        auto factory = std::static_pointer_cast<CFactory<T>>(factoryBase);
+        return factory->GetObject();
     }
 
-private:
-    QMap<QString, std::function<QVariant()>> creators_;
+    template<typename TInterface, typename... TS>
+    void RegisterFunctor(
+        std::function<std::shared_ptr<TInterface>(std::shared_ptr<TS>... ts)> functor) {
+        m_factories[GetTypeID<TInterface>()] = std::make_shared<CFactory<TInterface>>(
+                [ = ] { return functor(GetObject<TS>()...); });
+    }
+
+    template<typename TInterface>
+    void RegisterInstance(std::shared_ptr<TInterface> t) {
+        m_factories[GetTypeID<TInterface>()] = std::make_shared<CFactory<TInterface>>(
+                [ = ] { return t; });
+    }
+
+    template<typename TInterface, typename... TS>
+    void RegisterFunctor(std::shared_ptr<TInterface> (*functor)(std::shared_ptr<TS>... ts)) {
+        RegisterFunctor(
+            std::function<std::shared_ptr<TInterface>(std::shared_ptr<TS>... ts)>(functor));
+    }
+
+    template<typename TInterface, typename TConcrete, typename... TArguments>
+    void RegisterFactory() {
+        RegisterFunctor(
+            std::function<std::shared_ptr<TInterface>(std::shared_ptr<TArguments>... ts)>(
+        [](std::shared_ptr<TArguments>... arguments) -> std::shared_ptr<TInterface> {
+            return std::make_shared<TConcrete>(
+                std::forward<std::shared_ptr<TArguments>>(arguments)...);
+        }));
+    }
+
+    template<typename TInterface, typename TConcrete, typename... TArguments>
+    void RegisterInstance() {
+        RegisterInstance<TInterface>(std::make_shared<TConcrete>(GetObject<TArguments>()...));
+    }
 };
 
-#endif // IOCCONTAINER_H
+// Глобальный экземпляр контейнера
+extern IOCContainer gContainer;
+
+// Инициализация статической переменной
+inline int IOCContainer::s_nextTypeId = 115094801;
+
+#endif // IOCCONTAINER_H 

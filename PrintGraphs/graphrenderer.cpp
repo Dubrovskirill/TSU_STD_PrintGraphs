@@ -3,6 +3,9 @@
 #include <QValueAxis>
 #include <QVBoxLayout> // Добавлен для QVBoxLayout
 #include <QApplication>
+#include <QChart>
+#include <QDateTimeAxis>
+#include <QDateTime>
 
 GraphRenderer::GraphRenderer(QWidget* parent)
     : QWidget(parent)
@@ -100,11 +103,6 @@ void GraphRenderer::setStyle(bool isColored)
     }
 }
 
-bool GraphRenderer::isEmpty() const
-{
-    return m_chart->series().isEmpty();
-}
-
 void GraphRenderer::clear()
 {
     // Удаляем все серии данных
@@ -119,4 +117,9 @@ void GraphRenderer::clear()
     // Сбрасываем заголовок и легенду
     m_chart->setTitle("");
     m_chart->legend()->hide();
+}
+
+bool GraphRenderer::isEmpty() const
+{
+    return m_chart ? m_chart->series().isEmpty() : true;
 }

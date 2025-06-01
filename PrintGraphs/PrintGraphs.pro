@@ -5,7 +5,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = PrintGraphs
 TEMPLATE = app
 
-CONFIG += c++11
+CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -15,26 +15,25 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     graphrenderer.cpp \
-    sqlitedatasource.cpp \
-    jsondatasource.cpp \
     pdfexporter.cpp \
     jpegexporter.cpp \
-    exporterfactory.cpp
+    exporterfactory.cpp \
+    sqlitedatasource.cpp \
+    jsondatasource.cpp
 
 HEADERS += \
     mainwindow.h \
     graphrenderer.h \
-    igraphrenderer.h \
-    datasource.h \
-    sqlitedatasource.h \
-    jsondatasource.h \
-    datasourcefactory.h \
-    ioccontainer.h \
-    iocsetup.h \
     iexporter.h \
     pdfexporter.h \
     jpegexporter.h \
-    exporterfactory.h
+    exporterfactory.h \
+    ioccontainer.h \
+    sqlitedatasource.h \
+    jsondatasource.h \
+    igraphrenderer.h \
+    datasource.h \
+    datasourcefactory.h
 
 FORMS += \
     MainWindow.ui
