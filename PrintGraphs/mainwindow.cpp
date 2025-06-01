@@ -41,8 +41,13 @@ void MainWindow::setupUI()
     m_colorModeButton->setChecked(true);
     controlLayout->addWidget(m_colorModeButton);
 
+    // Создаем выпадающий список форматов экспорта
+    m_exportFormatCombo = new QComboBox(this);
+    m_exportFormatCombo->addItems(ExporterFactory::getAvailableFormats());
+    controlLayout->addWidget(m_exportFormatCombo);
+
     // Создаем кнопку печати в PDF
-    m_printButton = new QPushButton("Сохранить в PDF", this);
+    m_printButton = new QPushButton("Сохранить график", this);
     m_printButton->setEnabled(false); // По умолчанию кнопка неактивна
     controlLayout->addWidget(m_printButton);
 
@@ -75,6 +80,8 @@ void MainWindow::setupUI()
             this, &MainWindow::onColorModeChanged);
     connect(m_printButton, &QPushButton::clicked,
             this, &MainWindow::onPrintButtonClicked);
+    connect(m_exportFormatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onExportFormatChanged);
 
     // Устанавливаем минимальный размер окна
     resize(1000, 600);
@@ -154,13 +161,34 @@ void MainWindow::onPrintButtonClicked()
         return;
     }
 
-    QString filePath = QFileDialog::getSaveFileName(this, "Сохранить график", "", "PDF (*.pdf)");
+    // Получаем текущий формат экспорта
+    QString format = m_exportFormatCombo->currentText();
+    QSharedPointer<IExporter> exporter = ExporterFactory::createExporter(format);
+
+    if (!exporter) {
+        statusBar()->showMessage("Ошибка: неподдерживаемый формат экспорта");
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, 
+        "Сохранить график", 
+        "", 
+        exporter->getFileFilter());
+
     if (!filePath.isEmpty()) {
-        QPdfWriter pdfWriter(filePath);
-        QPainter painter(&pdfWriter);
-        m_graphRenderer->getChartView()->render(&painter);
-        statusBar()->showMessage("График успешно сохранен в PDF", 3000);
+        if (exporter->exportToFile(filePath, m_graphRenderer->getChartView())) {
+            statusBar()->showMessage("График успешно сохранен", 3000);
+        } else {
+            statusBar()->showMessage("Ошибка при сохранении графика");
+        }
     } else {
         statusBar()->showMessage("Сохранение отменено", 3000);
     }
+}
+
+void MainWindow::onExportFormatChanged(int index)
+{
+    // Обновляем текст кнопки в зависимости от выбранного формата
+    QString format = m_exportFormatCombo->currentText();
+    m_printButton->setText("Сохранить в " + format);
 } 

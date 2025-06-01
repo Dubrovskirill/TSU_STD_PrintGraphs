@@ -5,9 +5,12 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QListWidget>
+#include <QComboBox>
+#include <QStatusBar>
 #include <QtGui/qpdfwriter.h>
 #include "graphrenderer.h"
 #include "datasource.h"
+#include "exporterfactory.h"
 
 class MainWindow : public QMainWindow
 {
@@ -22,6 +25,7 @@ private slots:
     void onFileSelectedFromList(QListWidgetItem* item);
     void onColorModeChanged(bool checked);
     void onPrintButtonClicked();
+    void onExportFormatChanged(int index);
 
 private:
     void setupUI();
@@ -34,6 +38,7 @@ private:
     QListWidget* m_fileListWidget;       // Список файлов
     QPushButton* m_colorModeButton;    // Кнопка переключения цветного/монохромного режима
     QPushButton* m_printButton;        // Кнопка печати в PDF
+    QComboBox* m_exportFormatCombo;    // Выпадающий список форматов экспорта
     
     QString m_currentDirectoryPath;    // Текущий выбранный каталог
     bool m_isColored;                  // Флаг цветного режима
