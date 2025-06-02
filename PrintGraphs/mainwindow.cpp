@@ -1,7 +1,4 @@
 #include "mainwindow.h"
-#include "sqlitedatasource.h"
-#include "jsondatasource.h"
-#include "datasourcefactory.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWidget>
@@ -11,12 +8,32 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QStatusBar>
+#include <QFileDialog>
+#include <QFileInfo>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_isColored(true)
 {
     setupUI();
+    initializeComponents();
+}
+
+void MainWindow::initializeComponents()
+{
+    // Получаем компоненты через IOC контейнер
+    m_graphRenderer = gContainer.GetObject<IGraphRenderer>();
+    
+    if (!m_graphRenderer) {
+        showError("Не удалось инициализировать компонент отображения графика");
+        return;
+    }
+
+    // Добавляем GraphRenderer в сплиттер
+    QSplitter* dataSplitter = findChild<QSplitter*>();
+    if (dataSplitter) {
+        dataSplitter->addWidget(dynamic_cast<QWidget*>(m_graphRenderer.get()));
+    }
 }
 
 void MainWindow::setupUI()
@@ -43,7 +60,7 @@ void MainWindow::setupUI()
 
     // Создаем выпадающий список форматов экспорта
     m_exportFormatCombo = new QComboBox(this);
-    m_exportFormatCombo->addItems(ExporterFactory::getAvailableFormats());
+    m_exportFormatCombo->addItems({"PDF", "JPEG"});
     controlLayout->addWidget(m_exportFormatCombo);
 
     // Создаем кнопку печати в PDF
@@ -61,10 +78,6 @@ void MainWindow::setupUI()
     m_fileListWidget = new QListWidget(this);
     dataSplitter->addWidget(m_fileListWidget);
 
-    // Создаем и добавляем GraphRenderer в сплиттер
-    m_graphRenderer = new GraphRenderer(this);
-    dataSplitter->addWidget(m_graphRenderer);
-
     // Добавляем сплиттер в главный layout
     mainLayout->addWidget(dataSplitter);
 
@@ -80,7 +93,7 @@ void MainWindow::setupUI()
             this, &MainWindow::onColorModeChanged);
     connect(m_printButton, &QPushButton::clicked,
             this, &MainWindow::onPrintButtonClicked);
-    connect(m_exportFormatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(m_exportFormatCombo, &QComboBox::currentTextChanged,
             this, &MainWindow::onExportFormatChanged);
 
     // Устанавливаем минимальный размер окна
@@ -107,8 +120,12 @@ void MainWindow::listFilesInDirectory(const QString& directoryPath)
 {
     m_fileListWidget->clear();
     QDir directory(directoryPath);
-    QStringList fileList = directory.entryList(QDir::Files | QDir::NoDotAndDotDot);
-
+    
+    // Создаем фильтр для поддерживаемых форматов
+    QStringList filters;
+    filters << "*.sqlite" << "*.json";
+    
+    QStringList fileList = directory.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
     for (const QString& fileName : fileList) {
         m_fileListWidget->addItem(fileName);
     }
@@ -125,13 +142,25 @@ void MainWindow::onColorModeChanged(bool checked)
 {
     m_isColored = checked;
     m_colorModeButton->setText(checked ? "Цветной режим" : "Монохромный режим");
-    m_graphRenderer->setStyle(checked);
+    if (m_graphRenderer) {
+        m_graphRenderer->setStyle(checked);
+    }
     statusBar()->showMessage(checked ? "Установлен цветной режим" : "Установлен монохромный режим", 3000);
 }
 
 void MainWindow::loadData(const QString& filePath)
 {
-    QSharedPointer<IDataSource> dataSource = DataSourceFactory::createSource(filePath);
+    if (!m_graphRenderer) {
+        showError("Компонент отображения графика не инициализирован");
+        return;
+    }
+
+    // Получаем расширение файла
+    QFileInfo fileInfo(filePath);
+    QString extension = fileInfo.suffix().toLower();
+    
+    // Получаем источник данных через IOC контейнер по расширению
+    std::shared_ptr<IDataSource> dataSource = gContainer.GetObject<IDataSource>(extension.toStdString());
 
     if (!dataSource) {
         QString errorMessage = "Неподдерживаемый формат файла: " + filePath;
@@ -156,14 +185,14 @@ void MainWindow::loadData(const QString& filePath)
 
 void MainWindow::onPrintButtonClicked()
 {
-    if (m_graphRenderer->isEmpty()) {
+    if (!m_graphRenderer || m_graphRenderer->isEmpty()) {
         statusBar()->showMessage("Нельзя напечатать пустой график...");
         return;
     }
 
     // Получаем текущий формат экспорта
-    QString format = m_exportFormatCombo->currentText();
-    QSharedPointer<IExporter> exporter = ExporterFactory::createExporter(format);
+    QString format = m_exportFormatCombo->currentText().toLower();
+    std::shared_ptr<IExporter> exporter = gContainer.GetObject<IExporter>(format.toStdString());
 
     if (!exporter) {
         statusBar()->showMessage("Ошибка: неподдерживаемый формат экспорта");
@@ -186,9 +215,15 @@ void MainWindow::onPrintButtonClicked()
     }
 }
 
-void MainWindow::onExportFormatChanged(int index)
+void MainWindow::onExportFormatChanged()
 {
     // Обновляем текст кнопки в зависимости от выбранного формата
     QString format = m_exportFormatCombo->currentText();
     m_printButton->setText("Сохранить в " + format);
+}
+
+void MainWindow::showError(const QString& message)
+{
+    QMessageBox::critical(this, "Ошибка", message);
+    statusBar()->showMessage(message);
 } 

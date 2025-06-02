@@ -17,13 +17,13 @@ inline void setupIoC()
     // Регистрация GraphRenderer как реализации IGraphRenderer
     gContainer.RegisterFactory<IGraphRenderer, GraphRenderer>();
 
-    // Регистрация источников данных
-    gContainer.RegisterFactory<IDataSource, SqliteDataSource>();
-    gContainer.RegisterFactory<IDataSource, JsonDataSource>();
+    // Регистрация источников данных с ключами-расширениями
+    gContainer.RegisterFactory<IDataSource, SqliteDataSource>("sqlite");
+    gContainer.RegisterFactory<IDataSource, JsonDataSource>("json");
 
-    // Регистрация экспортеров
-    gContainer.RegisterFactory<IExporter, PdfExporter>();
-    gContainer.RegisterFactory<IExporter, JpegExporter>();
+    // Регистрация экспортеров с ключами-форматами
+    gContainer.RegisterFactory<IExporter, PdfExporter>("pdf");
+    gContainer.RegisterFactory<IExporter, JpegExporter>("jpeg");
 }
 
-#endif // IOCSETUP_H 
+#endif // IOCSETUP_H

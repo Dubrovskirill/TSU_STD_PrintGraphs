@@ -4,6 +4,8 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include <string>
+#include <typeindex>
 
 class IOCContainer
 {
@@ -18,32 +20,37 @@ public:
     class FactoryRoot
     {
     public:
-        virtual ~FactoryRoot() {}
+        virtual ~FactoryRoot() = default;
     };
 
-    std::map<int, std::shared_ptr<FactoryRoot>> m_factories;
+    std::map<std::pair<std::type_index, std::string>, std::shared_ptr<FactoryRoot>> m_factories;
 
     template<typename T>
     class CFactory : public FactoryRoot
     {
-        std::function<std::shared_ptr<T>()> m_functor;
+        std::function<std::shared_ptr<T>()> m_factory;
 
     public:
         ~CFactory() {}
 
-        CFactory(std::function<std::shared_ptr<T>()> functor)
-            : m_functor(functor)
+        CFactory(std::function<std::shared_ptr<T>()> factory)
+            : m_factory(factory)
         {}
 
         std::shared_ptr<T> GetObject() {
-            return m_functor();
+            return m_factory();
         }
     };
 
     template<typename T>
-    std::shared_ptr<T> GetObject() {
-        auto typeId = GetTypeID<T>();
-        auto factoryBase = m_factories[typeId];
+    std::shared_ptr<T> GetObject(const std::string& key = "") {
+        auto typeKey = std::make_pair(std::type_index(typeid(T)), key);
+        auto it = m_factories.find(typeKey);
+        if (it == m_factories.end()) return nullptr;
+        
+        auto factoryBase = it->second;
+        if (!factoryBase) return nullptr;
+        
         auto factory = std::static_pointer_cast<CFactory<T>>(factoryBase);
         return factory->GetObject();
     }
@@ -68,13 +75,10 @@ public:
     }
 
     template<typename TInterface, typename TConcrete, typename... TArguments>
-    void RegisterFactory() {
-        RegisterFunctor(
-            std::function<std::shared_ptr<TInterface>(std::shared_ptr<TArguments>... ts)>(
-        [](std::shared_ptr<TArguments>... arguments) -> std::shared_ptr<TInterface> {
-            return std::make_shared<TConcrete>(
-                std::forward<std::shared_ptr<TArguments>>(arguments)...);
-        }));
+    void RegisterFactory(const std::string& key = "") {
+        auto typeKey = std::make_pair(std::type_index(typeid(TInterface)), key);
+        m_factories[typeKey] = std::make_shared<CFactory<TInterface>>(
+            [] { return std::make_shared<TConcrete>(); });
     }
 
     template<typename TInterface, typename TConcrete, typename... TArguments>

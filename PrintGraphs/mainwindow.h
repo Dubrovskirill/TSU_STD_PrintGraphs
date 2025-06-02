@@ -8,9 +8,10 @@
 #include <QComboBox>
 #include <QStatusBar>
 #include <QtGui/qpdfwriter.h>
-#include "graphrenderer.h"
+#include "igraphrenderer.h"
 #include "datasource.h"
-#include "exporterfactory.h"
+#include "iexporter.h"
+#include "ioccontainer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,15 +26,16 @@ private slots:
     void onFileSelectedFromList(QListWidgetItem* item);
     void onColorModeChanged(bool checked);
     void onPrintButtonClicked();
-    void onExportFormatChanged(int index);
+    void onExportFormatChanged();
 
 private:
     void setupUI();
     void listFilesInDirectory(const QString& directoryPath);
     void loadData(const QString& filePath);
     void showError(const QString& message);
+    void initializeComponents();
 
-    GraphRenderer* m_graphRenderer;    // Виджет для отображения графика
+    std::shared_ptr<IGraphRenderer> m_graphRenderer;    // Виджет для отображения графика
     QPushButton* m_selectDirectoryButton;   // Кнопка выбора папки
     QListWidget* m_fileListWidget;       // Список файлов
     QPushButton* m_colorModeButton;    // Кнопка переключения цветного/монохромного режима
