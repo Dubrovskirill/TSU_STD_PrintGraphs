@@ -29,7 +29,7 @@ void MainWindow::initializeComponents()
         return;
     }
 
-    // Добавляем GraphRenderer в сплиттер
+    // Добавляем LineGraphRenderer в сплиттер
     QSplitter* dataSplitter = findChild<QSplitter*>();
     if (dataSplitter) {
         dataSplitter->addWidget(dynamic_cast<QWidget*>(m_graphRenderer.get()));

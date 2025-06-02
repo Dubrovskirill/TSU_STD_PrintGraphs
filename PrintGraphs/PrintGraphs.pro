@@ -14,7 +14,7 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    graphrenderer.cpp \
+    LineGraphRenderer.cpp \
     pdfexporter.cpp \
     jpegexporter.cpp \
     exporterfactory.cpp \
@@ -23,7 +23,7 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
-    graphrenderer.h \
+    LineGraphRenderer.h \
     iexporter.h \
     pdfexporter.h \
     jpegexporter.h \

@@ -3,7 +3,7 @@
 
 #include "ioccontainer.h"
 #include "igraphrenderer.h"
-#include "graphrenderer.h"
+#include "LineGraphRenderer.h"
 #include "datasource.h"
 #include "sqlitedatasource.h"
 #include "jsondatasource.h"
@@ -14,8 +14,8 @@
 // Функция для настройки IOC контейнера
 inline void setupIoC()
 {
-    // Регистрация GraphRenderer как реализации IGraphRenderer
-    gContainer.RegisterFactory<IGraphRenderer, GraphRenderer>();
+    // Регистрация LineGraphRenderer как реализации IGraphRenderer
+    gContainer.RegisterFactory<IGraphRenderer, LineGraphRenderer>();
 
     // Регистрация источников данных с ключами-расширениями
     gContainer.RegisterFactory<IDataSource, SqliteDataSource>("sqlite");
