@@ -58,6 +58,14 @@ void MainWindow::setupUI()
     m_colorModeButton->setChecked(true);
     controlLayout->addWidget(m_colorModeButton);
 
+    // Создаем выпадающий список типов графиков
+    m_graphTypeCombo = new QComboBox(this);
+    m_graphTypeCombo->addItem("Линейный график", "line");
+    m_graphTypeCombo->addItem("Столбчатый график", "bar");
+    m_graphTypeCombo->addItem("Круговой график", "pie");
+    connect(m_graphTypeCombo, &QComboBox::currentTextChanged, this, &MainWindow::onGraphTypeChanged);
+    controlLayout->addWidget(m_graphTypeCombo);
+
     // Создаем выпадающий список форматов экспорта
     m_exportFormatCombo = new QComboBox(this);
     m_exportFormatCombo->addItems({"PDF", "JPEG"});
@@ -178,7 +186,11 @@ void MainWindow::loadData(const QString& filePath)
         return;
     }
 
-    m_graphRenderer->render(dataSource->getData());
+    // Сохраняем данные для возможного перерисовывания
+    m_currentData = dataSource->getData();
+    
+    // Отрисовываем данные
+    m_graphRenderer->render(m_currentData);
     m_printButton->setEnabled(true);
     statusBar()->showMessage("Данные успешно загружены", 3000);
 }
@@ -220,6 +232,27 @@ void MainWindow::onExportFormatChanged()
     // Обновляем текст кнопки в зависимости от выбранного формата
     QString format = m_exportFormatCombo->currentText();
     m_printButton->setText("Сохранить в " + format);
+}
+
+void MainWindow::onGraphTypeChanged()
+{
+    updateGraphRenderer();
+}
+
+void MainWindow::updateGraphRenderer()
+{
+    QString graphType = m_graphTypeCombo->currentData().toString();
+    try {
+        m_graphRenderer = gContainer.GetObject<IGraphRenderer>(graphType.toStdString());
+        m_graphRenderer->setStyle(m_isColored);
+        
+        // Если есть данные, отрисовываем их
+        if (!m_currentData.isEmpty()) {
+            m_graphRenderer->render(m_currentData);
+        }
+    } catch (const std::exception& e) {
+        showError(QString("Ошибка при создании графика: %1").arg(e.what()));
+    }
 }
 
 void MainWindow::showError(const QString& message)

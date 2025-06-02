@@ -27,6 +27,7 @@ private slots:
     void onColorModeChanged(bool checked);
     void onPrintButtonClicked();
     void onExportFormatChanged();
+    void onGraphTypeChanged();
 
 private:
     void setupUI();
@@ -34,6 +35,7 @@ private:
     void loadData(const QString& filePath);
     void showError(const QString& message);
     void initializeComponents();
+    void updateGraphRenderer();
 
     std::shared_ptr<IGraphRenderer> m_graphRenderer;    // Виджет для отображения графика
     QPushButton* m_selectDirectoryButton;   // Кнопка выбора папки
@@ -41,9 +43,11 @@ private:
     QPushButton* m_colorModeButton;    // Кнопка переключения цветного/монохромного режима
     QPushButton* m_printButton;        // Кнопка печати в PDF
     QComboBox* m_exportFormatCombo;    // Выпадающий список форматов экспорта
+    QComboBox* m_graphTypeCombo;       // Выпадающий список типов графиков
     
     QString m_currentDirectoryPath;    // Текущий выбранный каталог
     bool m_isColored;                  // Флаг цветного режима
+    QList<QPointF> m_currentData;      // Текущие данные для отображения
 };
 
 #endif // MAINWINDOW_H 
