@@ -14,27 +14,29 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    LineGraphRenderer.cpp \
+    graphrenderer.cpp \
+    sqlitedatasource.cpp \
+    jsondatasource.cpp \
+    exporterfactory.cpp \
     pdfexporter.cpp \
     jpegexporter.cpp \
-    exporterfactory.cpp \
-    sqlitedatasource.cpp \
-    jsondatasource.cpp
+    areagraphrenderer.cpp
 
 HEADERS += \
     mainwindow.h \
-    LineGraphRenderer.h \
-    iexporter.h \
-    pdfexporter.h \
-    jpegexporter.h \
-    exporterfactory.h \
-    ioccontainer.h \
+    graphrenderer.h \
     sqlitedatasource.h \
     jsondatasource.h \
+    exporterfactory.h \
+    pdfexporter.h \
+    jpegexporter.h \
+    areagraphrenderer.h \
     igraphrenderer.h \
+    iexporter.h \
+    ioccontainer.h \
+    iocsetup.h \
     datasource.h \
-    datasourcefactory.h \
-    iocsetup.h
+    datasourcefactory.h
 
 FORMS += \
     MainWindow.ui

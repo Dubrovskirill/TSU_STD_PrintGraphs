@@ -10,18 +10,23 @@
 #include "iexporter.h"
 #include "pdfexporter.h"
 #include "jpegexporter.h"
+#include "areagraphrenderer.h"
+
+// Глобальный контейнер IOC
+extern IOCContainer gContainer;
 
 // Функция для настройки IOC контейнера
 inline void setupIoC()
 {
-    // Регистрация LineGraphRenderer как реализации IGraphRenderer
-    gContainer.RegisterFactory<IGraphRenderer, LineGraphRenderer>();
-
-    // Регистрация источников данных с ключами-расширениями
+    // Регистрация источников данных
     gContainer.RegisterFactory<IDataSource, SqliteDataSource>("sqlite");
     gContainer.RegisterFactory<IDataSource, JsonDataSource>("json");
 
-    // Регистрация экспортеров с ключами-форматами
+    // Регистрация рендереров графиков
+    gContainer.RegisterFactory<IGraphRenderer, LineGraphRenderer>("line");
+    gContainer.RegisterFactory<IGraphRenderer, AreaGraphRenderer>("area");
+
+    // Регистрация экспортеров
     gContainer.RegisterFactory<IExporter, PdfExporter>("pdf");
     gContainer.RegisterFactory<IExporter, JpegExporter>("jpeg");
 }

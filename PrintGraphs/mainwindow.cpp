@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::initializeComponents()
 {
     // Получаем компоненты через IOC контейнер
-    m_graphRenderer = gContainer.GetObject<IGraphRenderer>();
+    m_graphRenderer = gContainer.GetObject<IGraphRenderer>("line");
     
     if (!m_graphRenderer) {
         showError("Не удалось инициализировать компонент отображения графика");
@@ -61,8 +61,7 @@ void MainWindow::setupUI()
     // Создаем выпадающий список типов графиков
     m_graphTypeCombo = new QComboBox(this);
     m_graphTypeCombo->addItem("Линейный график", "line");
-    m_graphTypeCombo->addItem("Столбчатый график", "bar");
-    m_graphTypeCombo->addItem("Круговой график", "pie");
+    m_graphTypeCombo->addItem("График с областями", "area");
     connect(m_graphTypeCombo, &QComboBox::currentTextChanged, this, &MainWindow::onGraphTypeChanged);
     controlLayout->addWidget(m_graphTypeCombo);
 
@@ -243,12 +242,26 @@ void MainWindow::updateGraphRenderer()
 {
     QString graphType = m_graphTypeCombo->currentData().toString();
     try {
-        m_graphRenderer = gContainer.GetObject<IGraphRenderer>(graphType.toStdString());
-        m_graphRenderer->setStyle(m_isColored);
-        
-        // Если есть данные, отрисовываем их
-        if (!m_currentData.isEmpty()) {
-            m_graphRenderer->render(m_currentData);
+        // Получаем сплиттер
+        QSplitter* dataSplitter = findChild<QSplitter*>();
+        if (dataSplitter) {
+            // Создаем новый рендерер
+            m_graphRenderer = gContainer.GetObject<IGraphRenderer>(graphType.toStdString());
+            m_graphRenderer->setStyle(m_isColored);
+            
+            // Заменяем старый виджет на новый в сплиттере
+            QWidget* oldWidget = dataSplitter->widget(1); // Индекс 1 - это график (0 - список файлов)
+            if (oldWidget) {
+                dataSplitter->replaceWidget(1, dynamic_cast<QWidget*>(m_graphRenderer.get()));
+                delete oldWidget;
+            } else {
+                dataSplitter->addWidget(dynamic_cast<QWidget*>(m_graphRenderer.get()));
+            }
+            
+            // Если есть данные, отрисовываем их
+            if (!m_currentData.isEmpty()) {
+                m_graphRenderer->render(m_currentData);
+            }
         }
     } catch (const std::exception& e) {
         showError(QString("Ошибка при создании графика: %1").arg(e.what()));
