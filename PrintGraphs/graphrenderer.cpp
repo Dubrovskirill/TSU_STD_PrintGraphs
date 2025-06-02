@@ -32,6 +32,12 @@ GraphRenderer::~GraphRenderer()
     // QChart и QChartView автоматически очищаются через родительский QWidget
 }
 
+QString GraphRenderer::formatDateTime(qreal timestamp) const
+{
+    QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(timestamp));
+    return dateTime.toString("dd.MM.yyyy HH:mm");
+}
+
 void GraphRenderer::render(const QList<QPointF>& data)
 {
     // Очистка предыдущих данных
@@ -45,7 +51,12 @@ void GraphRenderer::render(const QList<QPointF>& data)
 
     // Создание новой серии данных
     QtCharts::QLineSeries* series = new QtCharts::QLineSeries();
-    series->append(data);
+
+    // Добавляем точки с отформатированными датами
+    for (const QPointF& point : data) {
+        QString dateStr = formatDateTime(point.x());
+        series->append(point.x(), point.y());
+    }
 
     // Настройка стиля линии
     QPen pen = series->pen();
@@ -57,9 +68,9 @@ void GraphRenderer::render(const QList<QPointF>& data)
     m_chart->addSeries(series);
 
     // Настройка осей
-    QtCharts::QValueAxis* axisX = new QtCharts::QValueAxis();
-    axisX->setTitleText("Time (hours)");
-    axisX->setLabelFormat("%.1f");
+    QtCharts::QDateTimeAxis* axisX = new QtCharts::QDateTimeAxis();
+    axisX->setTitleText("Date/Time");
+    axisX->setFormat("dd.MM.yyyy HH:mm");
 
     QtCharts::QValueAxis* axisY = new QtCharts::QValueAxis();
     axisY->setTitleText("Value");
@@ -78,7 +89,9 @@ void GraphRenderer::render(const QList<QPointF>& data)
         maxY = qMax(maxY, point.y());
     }
 
-    axisX->setRange(minX, maxX);
+    // Устанавливаем диапазон для оси X в миллисекундах
+    axisX->setRange(QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(minX)),
+                   QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(maxX)));
     axisY->setRange(minY, maxY);
 
     // Добавление осей на график и привязка к серии

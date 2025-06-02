@@ -6,6 +6,7 @@
 #include <QChartView>
 #include <QWidget>
 #include <QDateTimeAxis>
+#include <QDateTime>
 
 // Реализация интерфейса IGraphRenderer с использованием Qt Charts
 class GraphRenderer : public IGraphRenderer, public QWidget
@@ -33,6 +34,9 @@ private:
     QtCharts::QChart* m_chart; // График
     QtCharts::QChartView* m_chartView; // Представление графика
     bool m_isColored; // Флаг текущего стиля
+
+    // Форматирование даты из timestamp
+    QString formatDateTime(qreal timestamp) const;
 
     // Вместо QValueAxis для оси X будем использовать QDateTimeAxis
     // QtCharts::QValueAxis* m_axisX; // Больше не нужен
