@@ -62,6 +62,7 @@ void MainWindow::setupUI()
     m_graphTypeCombo = new QComboBox(this);
     m_graphTypeCombo->addItem("Линейный график", "line");
     m_graphTypeCombo->addItem("График с областями", "area");
+    m_graphTypeCombo->addItem("Точечный график", "scatter");
     connect(m_graphTypeCombo, &QComboBox::currentTextChanged, this, &MainWindow::onGraphTypeChanged);
     controlLayout->addWidget(m_graphTypeCombo);
 
@@ -273,3 +274,4 @@ void MainWindow::showError(const QString& message)
     QMessageBox::critical(this, "Ошибка", message);
     statusBar()->showMessage(message);
 } 
+ 

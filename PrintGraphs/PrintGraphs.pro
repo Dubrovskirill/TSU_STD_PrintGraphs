@@ -15,28 +15,30 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     graphrenderer.cpp \
-    sqlitedatasource.cpp \
+    areagraphrenderer.cpp \
+    scattergraphrenderer.cpp \
     jsondatasource.cpp \
-    exporterfactory.cpp \
-    pdfexporter.cpp \
+    sqlitedatasource.cpp \
     jpegexporter.cpp \
-    areagraphrenderer.cpp
+    pdfexporter.cpp \
+    exporterfactory.cpp
 
 HEADERS += \
     mainwindow.h \
     graphrenderer.h \
-    sqlitedatasource.h \
-    jsondatasource.h \
-    exporterfactory.h \
-    pdfexporter.h \
-    jpegexporter.h \
     areagraphrenderer.h \
+    scattergraphrenderer.h \
     igraphrenderer.h \
-    iexporter.h \
-    ioccontainer.h \
-    iocsetup.h \
+    jsondatasource.h \
+    sqlitedatasource.h \
     datasource.h \
-    datasourcefactory.h
+    datasourcefactory.h \
+    iexporter.h \
+    jpegexporter.h \
+    pdfexporter.h \
+    exporterfactory.h \
+    ioccontainer.h \
+    iocsetup.h
 
 FORMS += \
     MainWindow.ui

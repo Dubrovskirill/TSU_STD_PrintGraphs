@@ -11,6 +11,7 @@
 #include "pdfexporter.h"
 #include "jpegexporter.h"
 #include "areagraphrenderer.h"
+#include "scattergraphrenderer.h"
 
 // Глобальный контейнер IOC
 extern IOCContainer gContainer;
@@ -25,6 +26,7 @@ inline void setupIoC()
     // Регистрация рендереров графиков
     gContainer.RegisterFactory<IGraphRenderer, LineGraphRenderer>("line");
     gContainer.RegisterFactory<IGraphRenderer, AreaGraphRenderer>("area");
+    gContainer.RegisterFactory<IGraphRenderer, ScatterGraphRenderer>("scatter");
 
     // Регистрация экспортеров
     gContainer.RegisterFactory<IExporter, PdfExporter>("pdf");
