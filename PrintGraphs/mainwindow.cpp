@@ -86,6 +86,9 @@ void MainWindow::setupUI()
     m_fileListWidget = new QListWidget(this);
     dataSplitter->addWidget(m_fileListWidget);
 
+    // Устанавливаем соотношение размеров (1:4)
+    dataSplitter->setSizes(QList<int>() << 100 << 900);
+
     // Добавляем сплиттер в главный layout
     mainLayout->addWidget(dataSplitter);
 
