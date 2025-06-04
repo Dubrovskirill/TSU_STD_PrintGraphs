@@ -1,30 +1,22 @@
 #ifndef AREAGRAPHRENDERER_H
 #define AREAGRAPHRENDERER_H
 
-#include "igraphrenderer.h"
-#include <QChart>
-#include <QChartView>
-#include <QWidget>
-#include <QDateTimeAxis>
-#include <QDateTime>
+#include "basegraphrenderer.h"
+#include <QAreaSeries>
+#include <QLineSeries>
 
-class AreaGraphRenderer : public IGraphRenderer, public QWidget
+using namespace QtCharts;
+
+class AreaGraphRenderer : public BaseGraphRenderer
 {
 public:
     explicit AreaGraphRenderer(QWidget* parent = nullptr);
-    ~AreaGraphRenderer() override;
+    ~AreaGraphRenderer() override = default;
 
-    void render(const QList<QPointF>& data) override;
-    void setStyle(bool isColored) override;
-    bool isEmpty() const;
-    QtCharts::QChartView* getChartView() const { return m_chartView; }
-    void clear();
-
-private:
-    QtCharts::QChart* m_chart;
-    QtCharts::QChartView* m_chartView;
-    bool m_isColored;
-    QString formatDateTime(qreal timestamp) const;
+protected:
+    // Реализация абстрактных методов базового класса
+    void setupSeries(const QList<QPointF>& data) override;
+    void updateSeriesStyle() override;
 };
 
 #endif // AREAGRAPHRENDERER_H 

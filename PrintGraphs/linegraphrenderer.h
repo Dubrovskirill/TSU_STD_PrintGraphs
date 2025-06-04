@@ -1,46 +1,21 @@
-#ifndef GRAPHRENDERER_H
-#define GRAPHRENDERER_H
+#ifndef LINEGRAPHRENDERER_H
+#define LINEGRAPHRENDERER_H
 
-#include "igraphrenderer.h"
-#include <QChart>
-#include <QChartView>
-#include <QWidget>
-#include <QDateTimeAxis>
-#include <QDateTime>
+#include "basegraphrenderer.h"
+#include <QLineSeries>
 
-// Реализация интерфейса IGraphRenderer с использованием Qt Charts
-class LineGraphRenderer : public IGraphRenderer, public QWidget
+using namespace QtCharts;
+
+class LineGraphRenderer : public BaseGraphRenderer
 {
 public:
     explicit LineGraphRenderer(QWidget* parent = nullptr);
-    ~LineGraphRenderer() override;
+    ~LineGraphRenderer() override = default;
 
-    // Реализация метода рендеринга графика
-    void render(const QList<QPointF>& data) override;
-
-    // Установка стиля (цветной или монохромный)
-    void setStyle(bool isColored) override;
-
-    // Проверка, пуст ли график
-    bool isEmpty() const;
-
-    // Получение указателя на QChartView
-    QtCharts::QChartView* getChartView() const { return m_chartView; }
-
-    // Очистка графика
-    void clear();
-
-private:
-    QtCharts::QChart* m_chart; // График
-    QtCharts::QChartView* m_chartView; // Представление графика
-    bool m_isColored; // Флаг текущего стиля
-
-    // Форматирование даты из timestamp
-    QString formatDateTime(qreal timestamp) const;
-
-    // Вместо QValueAxis для оси X будем использовать QDateTimeAxis
-    // QtCharts::QValueAxis* m_axisX; // Больше не нужен
-    // QtCharts::QValueAxis* m_axisY; // Ось Y остается QValueAxis
+protected:
+    // Реализация абстрактных методов базового класса
+    void setupSeries(const QList<QPointF>& data) override;
+    void updateSeriesStyle() override;
 };
 
-#endif // GRAPHRENDERER_H
+#endif // LINEGRAPHRENDERER_H

@@ -1,37 +1,21 @@
 #ifndef SCATTERGRAPHRENDERER_H
 #define SCATTERGRAPHRENDERER_H
 
-#include "igraphrenderer.h"
-#include <QChart>
-#include <QChartView>
-#include <QWidget>
-#include <QDateTimeAxis>
-#include <QValueAxis>
-#include <QDateTime>
+#include "basegraphrenderer.h"
 #include <QScatterSeries>
 
 using namespace QtCharts;
 
-class ScatterGraphRenderer : public IGraphRenderer, public QWidget
+class ScatterGraphRenderer : public BaseGraphRenderer
 {
 public:
     explicit ScatterGraphRenderer(QWidget* parent = nullptr);
-    ~ScatterGraphRenderer() override;
+    ~ScatterGraphRenderer() override = default;
 
-    // Реализация методов интерфейса IGraphRenderer
-    void render(const QList<QPointF>& data) override;
-    void setStyle(bool isColored) override;
-    bool isEmpty() const override;
-    QChartView* getChartView() const override;
-    void clear() override;
-
-private:
-    QChart* m_chart;
-    QChartView* m_chartView;
-    bool m_isColored;
-    
-    // Приватные методы
-    QString formatDateTime(qreal timestamp) const;
+protected:
+    // Реализация абстрактных методов базового класса
+    void setupSeries(const QList<QPointF>& data) override;
+    void updateSeriesStyle() override;
 };
 
 #endif // SCATTERGRAPHRENDERER_H 
