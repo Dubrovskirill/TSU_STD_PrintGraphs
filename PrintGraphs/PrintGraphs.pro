@@ -21,12 +21,12 @@ SOURCES += \
     basegraphrenderer.cpp \
     sqlitedatasource.cpp \
     jpegexporter.cpp \
-    pdfexporter.cpp \
-    exporterfactory.cpp
+    pdfexporter.cpp
 
 HEADERS += \
     mainwindow.h \
     jsondatasource.h \
+    ioccontainer.h \
     iocsetup.h \
     linegraphrenderer.h \
     areagraphrenderer.h \
@@ -34,11 +34,9 @@ HEADERS += \
     basegraphrenderer.h \
     sqlitedatasource.h \
     datasource.h \
-    datasourcefactory.h \
     iexporter.h \
     jpegexporter.h \
-    pdfexporter.h \
-    exporterfactory.h
+    pdfexporter.h
 
 FORMS += \
     MainWindow.ui
