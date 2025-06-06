@@ -35,6 +35,7 @@ HEADERS += \
     sqlitedatasource.h \
     datasource.h \
     iexporter.h \
+    igraphrenderer.h \
     jpegexporter.h \
     pdfexporter.h
 
